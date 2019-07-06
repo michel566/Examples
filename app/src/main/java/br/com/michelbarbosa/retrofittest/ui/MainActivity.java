@@ -2,7 +2,6 @@ package br.com.michelbarbosa.retrofittest.ui;
 
 import android.app.ProgressDialog;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -10,37 +9,27 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import br.com.michelbarbosa.retrofittest.R;
-import br.com.michelbarbosa.retrofittest.domain.RespostaServidor;
-import br.com.michelbarbosa.retrofittest.service.RetrofitService;
-import br.com.michelbarbosa.retrofittest.service.ServiceGenerator;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
-public class MainActivity extends AppCompatActivity {
-    private Button botaoEnviar;
-    private EditText unidadeEntrada, unidadeSaida, valorEntrada;
-    private TextView saidaValorConverter, saidaUnidadeConverter, saidaUnidadeConvertida, saidaValorConvertido;
-    RespostaServidor resposta = new RespostaServidor();
-    ProgressDialog progress;
+public class MainActivity extends ServiceActivity {
+    private Button btSubmit;
+    private EditText etCodCard;
+    private TextView tvCardId, tvDbfId, tvCardSet, tvName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        unidadeEntrada = (EditText) findViewById(R.id.edittext_unidade_entrada);
-        unidadeSaida = (EditText) findViewById(R.id.edittext_unidade_saida);
-        valorEntrada = (EditText) findViewById(R.id.edittext_valor);
-        saidaValorConverter = (TextView) findViewById(R.id.textview_valorconverter);
-        saidaUnidadeConverter = (TextView) findViewById(R.id.textview_unidadeconverter);
-        saidaUnidadeConvertida = (TextView) findViewById(R.id.textview_unidadeconvertida);
-        saidaValorConvertido = (TextView) findViewById(R.id.textview_valorconvertido);
-        botaoEnviar = (Button) findViewById(R.id.button_enviar);
+        etCodCard = findViewById(R.id.etCod_card);
+        tvCardId = findViewById(R.id.tvCardId);
+        tvDbfId = findViewById(R.id.tvDbfId);
+        tvCardSet = findViewById(R.id.tvCardSet);
+        tvName = findViewById(R.id.tvName);
+        btSubmit = findViewById(R.id.btSubmit);
 
         listenersButtons();
     }
+
 
 
     /**
@@ -52,22 +41,16 @@ public class MainActivity extends AppCompatActivity {
      * podendo assim consumir json no Android.
      */
 
+    @Override
     public void listenersButtons() {
-        botaoEnviar.setOnClickListener(new View.OnClickListener() {
+        btSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 progress = new ProgressDialog(MainActivity.this);
                 progress.setTitle("enviando...");
                 progress.show();
 
-                //pega os valores dos edittextos
-                String unidadeE = unidadeEntrada.getText().toString();
-                String unidadeS = unidadeSaida.getText().toString();
-                String valor = valorEntrada.getText().toString();
-
-                //chama o retrofit para fazer a requisição no webservice
-                retrofitConverter(unidadeE, valor, unidadeS);
-
+                getValues();
             }
         });
     }
@@ -77,74 +60,21 @@ public class MainActivity extends AppCompatActivity {
      * Como já possuímos o valor da conversão no nosso novo objeto resposta, basta coloca-lo no textview.
      */
 
-    public void setaValores() {
-        saidaUnidadeConverter.setText(unidadeEntrada.getText().toString());
-        saidaValorConverter.setText(valorEntrada.getText().toString());
-        saidaUnidadeConvertida.setText(unidadeSaida.getText().toString());
-        saidaValorConvertido.setText(resposta.getResult());
+    @Override
+    public void setValues() {
+        tvName.setText(resposta.getName());
+        tvDbfId.setText(resposta.getDbfId());
+        tvCardId.setText(resposta.getCardId());
+        tvCardSet.setText(resposta.getCardSet());
     }
 
-    /**
-     * O tão aguardado método que demos o nome de retrofitConverter é aonde a mágica acontece na activity.
-     * Quando o botão de enviar é clicado, é chamado este método e passado para eles os parâmetros de entrada do endpoint.
-     * É instanciado um objeto do serviço que criamos, e em seguida, é passado os parâmetros para o método converterUnidade
-     * que declaramos lá na nossa interface.
-     * <p>
-     * Em seguida, temos o método onResponse do próprio Retrofit. Quando a requisição for completada e o
-     * servidor já possuir uma resposta, iremos verificar se a resposta foi um sucesso. Após isso, jogamos o corpo (body) da
-     * resposta dentro de um objeto dentro de um objeto RespostaServidor (isso graças ao GSON).
-     * <p>
-     * No retorno do servidor um dos campos é para dizer se os parâmetros de entradas foram válidos
-     * e a conversão aconteceu com sucesso. Este campo chama-se valid e é um campo do tipo boolean.
-     * Verificamos então se isValid é true. Caso seja, passamos todos os campos do objeto resposta
-     * para um novo objeto RespostaSevidor, para que possamos manipulá-lo como quisermos. Por fim, retiramos o diálogo
-     * de progresso pois a requisição acabou e chamamos o método setaValores().
-     */
-    public void retrofitConverter(String unidadeEnt, String valorEnt, String unidadeSai) {
-        RetrofitService service = ServiceGenerator.createService(RetrofitService.class);
-        Call<RespostaServidor> call = service.converterUnidade(unidadeEnt, valorEnt, unidadeSai);
+    @Override
+    public void getValues(){
+        //pega os valores dos edittextos
+        String cardId = etCodCard.getText().toString();
 
-        call.enqueue(new Callback<RespostaServidor>() {
-            @Override
-            public void onResponse(Call<RespostaServidor> call, Response<RespostaServidor> response) {
-
-                if (response.isSuccessful()) {
-                    RespostaServidor respostaServidor = response.body();
-
-                    //verifica aqui se o corpo da resposta não é nulo
-                    if (respostaServidor != null) {
-                        if (respostaServidor.isValid()) {
-                            resposta.setFrom_type(respostaServidor.getFrom_type());
-                            resposta.setFrom_value(respostaServidor.getFrom_value());
-                            resposta.setResult(respostaServidor.getResult());
-                            resposta.setTo_type(respostaServidor.getTo_type());
-                            resposta.setValid(respostaServidor.isValid());
-
-                            progress.dismiss();
-                            setaValores();
-
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Insira unidade e valores válidos", Toast.LENGTH_SHORT).show();
-                        }
-
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Resposta nula do servidor", Toast.LENGTH_SHORT).show();
-                    }
-
-                } else {
-                    Toast.makeText(getApplicationContext(), "Resposta não foi sucesso", Toast.LENGTH_SHORT).show();
-                    // segura os erros de requisição
-                    ResponseBody errorBody = response.errorBody();
-                }
-
-                progress.dismiss();
-            }
-
-            @Override
-            public void onFailure(Call<RespostaServidor> call, Throwable t) {
-                Toast.makeText(getApplicationContext(), "Erro na chamada ao servidor", Toast.LENGTH_SHORT).show();
-            }
-        });
-
+        //chama o retrofit para fazer a requisição no webservice
+        retrofitConverter(cardId);
     }
-}
+
+ }
