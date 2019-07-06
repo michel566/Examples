@@ -12,7 +12,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ServiceGenerator {
 
     //URL base do endpoint. Deve sempre terminar com /
-    public static final String API_BASE_URL = "https://community-neutrino-currency-conversion.p.mashape.com/";
+    public static final String API_BASE_URL = "https://omgvamp-hearthstone-v1.p.rapidapi.com/";
 
     public static <S> S createService(Class<S> serviceClass) {
 
@@ -24,7 +24,6 @@ public class ServiceGenerator {
                 .readTimeout(15, TimeUnit.SECONDS);
 
         httpClient.addInterceptor(loggingInterceptor);
-
 
         //Instância do retrofit
         Retrofit retrofit = new Retrofit.Builder()

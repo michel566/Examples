@@ -2,20 +2,15 @@ package br.com.michelbarbosa.retrofittest.service;
 
 import br.com.michelbarbosa.retrofittest.domain.RespostaServidor;
 import retrofit2.Call;
-import retrofit2.http.Field;
-import retrofit2.http.FormUrlEncoded;
+import retrofit2.http.GET;
 import retrofit2.http.Headers;
-import retrofit2.http.POST;
+import retrofit2.http.Query;
 
 public interface RetrofitService {
 
-    @Headers("X-Mashape-Key: AuuyclCPjcmshv2iOPq190OpzLrMp1FJWwejsnJrdfwOUr4h44")
+    @Headers("X-RapidAPI-Key: YZaoaf9GcVmsh3lobS37cJ9Utd0op1eNl3fjsnbZ3RfqnDy8eA")
 
-    @FormUrlEncoded
-    @POST("convert")
-    Call<RespostaServidor> converterUnidade(@Field("from-type") String from_type,
-                                            @Field("from-value") String from_value,
-                                            @Field("to-type") String to_type);
-
+    @GET("cards")
+    Call<RespostaServidor> getCardById(@Query("name") String name);
 
 }

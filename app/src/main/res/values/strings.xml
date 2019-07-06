@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">RetrofitTest</string>
+    <string name="digite_o_c_digo_do_card">Digite o código do card</string>
 </resources>
